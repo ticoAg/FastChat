@@ -125,7 +125,8 @@ class VLLMWorker(BaseModelWorker):
                     prompt + output.text for output in request_output.outputs
                 ]
             else:
-                text_outputs = [output.text for output in request_output.outputs]
+                # text_outputs = [output.text for output in request_output.outputs]         # Wait for vllm AsyncLLMEngine fix
+                text_outputs = [self.tokenizer.decode(output.token_ids[:-1]) for output in request_output.outputs]
             text_outputs = " ".join(text_outputs)
 
             partial_stop = any(is_partial_stop(text_outputs, i) for i in stop)
