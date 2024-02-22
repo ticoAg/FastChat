@@ -116,6 +116,8 @@ class VLLMWorker(BaseModelWorker):
             frequency_penalty=frequency_penalty,
             best_of=best_of,
         )
+        if "qwen1.5" in params.get("model").lower():
+            sampling_params.skip_special_tokens = False
         results_generator = engine.generate(context, sampling_params, request_id)
 
         async for request_output in results_generator:
@@ -125,8 +127,7 @@ class VLLMWorker(BaseModelWorker):
                     prompt + output.text for output in request_output.outputs
                 ]
             else:
-                # text_outputs = [output.text for output in request_output.outputs]         # Wait for vllm AsyncLLMEngine fix
-                text_outputs = [self.tokenizer.decode(output.token_ids[:-1]) for output in request_output.outputs]
+                text_outputs = [output.text for output in request_output.outputs]
             text_outputs = " ".join(text_outputs)
 
             partial_stop = any(is_partial_stop(text_outputs, i) for i in stop)
